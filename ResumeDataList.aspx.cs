@@ -149,12 +149,12 @@ public partial class ResumeDataList : System.Web.UI.Page {
       protected void Button_匯出查詢報表_Click(object sender, EventArgs e) {
         DataTable dt = new DataTable();
 
-        dt = ExcelData("產官學研統計表");
+        dt = ExcelData("產官學研績效分配統計表");
 
         if (dt.Rows.Count > 0) {
             Conver2Excel cXls = new Conver2Excel();
             byte[] bytes = cXls.ToXLS(dt, "報表"); //資料表標籤名稱
-            string filename = HttpUtility.UrlPathEncode(string.Format("UCAN報表_{0}.xls", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"))); //檔案名稱
+            string filename = HttpUtility.UrlPathEncode(string.Format("績效分配統計表_{0}.xls", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"))); //檔案名稱
             Response.ClearHeaders(); //從緩衝區資料流清除所有標頭
             Response.Clear(); //清除buffer緩衝區內容
             Response.AddHeader("Content-Disposition", "attachment; filename=" + filename); //下載後的檔名  Content-Disposition：MIME協議的擴展可以控制用戶請求所得的內容存為一個文件的時候提供一個默認的文件名 attachment為附件方式下載
@@ -176,9 +176,8 @@ public partial class ResumeDataList : System.Web.UI.Page {
         using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString)) {
             conn.Open();
             switch (subject) {
-                case "產官學研統計表":
-                    sqlstr = @"SELECT *
-  FROM [RD].[dbo].[PPS_Research_TYPE_認列類別]";
+                case "產官學研績效分配統計表":
+                    sqlstr = @"exec [dbo].[研發P績效分配明細] @年度="+TextBox_年度.Text;
                     break;
                 default:
                     break;
@@ -186,19 +185,18 @@ public partial class ResumeDataList : System.Web.UI.Page {
             //where.Add(" [年度] = @年度");
             //prmDic.Add("@年度", TextBox_年度.Text);
 
-            List<SqlParameter> prm = DictionaryToSqlParameters(prmDic);// new List<SqlParameter>();//將參數值放入
+            //List<SqlParameter> prm = DictionaryToSqlParameters(prmDic);// new List<SqlParameter>();//將參數值放入
 
-            if (where.Count > 0) {
-                sqlstr += " WHERE " + string.Join(" AND ", where);
-            }
+            //if (where.Count > 0) {
+            //    sqlstr += " WHERE " + string.Join(" AND ", where);
+            //}
 
             //sqlstr += "ORDER BY  DESC";
 
             SqlCommand cmd = new SqlCommand(sqlstr, conn);
-            cmd.Parameters.AddRange(prm.ToArray());
+            //cmd.Parameters.AddRange(prm.ToArray());
             SqlDataAdapter sda = new SqlDataAdapter(cmd);
             sda.Fill(dt);
-
             conn.Close();
         }
         return dt;
